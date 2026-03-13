@@ -103,9 +103,13 @@
 
 
       } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-        canvas.style.width = "1080px";
-        canvas.style.height = "1920px";
+        // Desktop style: Fit canvas to viewport height while keeping aspect ratio (9:16)
+        var aspectRatio = 1080 / 1920;
+        var availableHeight = window.innerHeight - 50; // 50px for footer
+        var canvasHeight = availableHeight;
+        var canvasWidth = canvasHeight * aspectRatio;
+        canvas.style.width = canvasWidth + "px";
+        canvas.style.height = canvasHeight + "px";
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
