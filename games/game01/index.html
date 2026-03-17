@@ -25,14 +25,8 @@
       }
       #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
 
-      @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
       @keyframes pulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
       @keyframes twinkle { 0%,100% { opacity: 0.2 } 50% { opacity: 0.8 } }
-
-      .loading-orbit {
-        animation: spin 4s linear infinite;
-        margin-bottom: 24px;
-      }
 
       .loading-title {
         font-size: 24px; font-weight: 700; color: #FFD700;
@@ -119,14 +113,6 @@
         <div class="star s3"></div><div class="star s4"></div>
         <div class="star s5"></div><div class="star s6"></div>
         <div class="star s7"></div><div class="star s8"></div>
-
-        <svg class="loading-orbit" width="48" height="48" viewBox="0 0 40 40" fill="none">
-          <circle cx="20" cy="20" r="4" fill="#E84070"/>
-          <ellipse cx="20" cy="20" rx="16" ry="5" stroke="#C87BDB" stroke-width="1.2" transform="rotate(-30 20 20)"/>
-          <ellipse cx="20" cy="20" rx="16" ry="5" stroke="#8B9EF0" stroke-width="1.2" transform="rotate(30 20 20)"/>
-          <ellipse cx="20" cy="20" rx="16" ry="5" stroke="#E88AAE" stroke-width="1.2" transform="rotate(90 20 20)"/>
-          <circle cx="20" cy="20" r="2" fill="#FFD6E8"/>
-        </svg>
 
         <div class="loading-title">SUPERNOVA</div>
         <div class="loading-sub">MINIGAMES</div>
