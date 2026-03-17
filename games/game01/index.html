@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>고음 훈련 | Supernova Minigames</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Galmuri11.min.css');
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #0D0D1A; overflow: hidden; }
+
+      #unity-container { position: fixed; width: 100%; height: 100%; }
+      #unity-canvas { background: #0D0D1A; width: 100%; height: 100%; }
+
+      /* Custom loading overlay */
+      #loading-overlay {
+        position: fixed; inset: 0; z-index: 10;
+        background: #0D0D1A;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-family: 'Galmuri11', monospace;
+        transition: opacity 0.4s ease;
+      }
+      #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+      @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+      @keyframes pulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
+      @keyframes twinkle { 0%,100% { opacity: 0.2 } 50% { opacity: 0.8 } }
+
+      .loading-orbit {
+        animation: spin 4s linear infinite;
+        margin-bottom: 24px;
+      }
+
+      .loading-title {
+        font-size: 24px; font-weight: 700; color: #FFD700;
+        text-shadow: 2px 2px 0 #E84070, -1px -1px 0 #C87BDB, 0 0 12px rgba(255,215,0,0.3);
+        letter-spacing: 3px;
+        margin-bottom: 6px;
+      }
+      .loading-sub {
+        font-size: 11px; color: #8B9EF0;
+        letter-spacing: 4px; margin-bottom: 32px;
+      }
+
+      /* Progress bar */
+      .progress-track {
+        width: 200px; height: 6px;
+        background: #1A1A2E;
+        border-radius: 3px;
+        border: 1px solid #3A3A5C;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .progress-fill {
+        height: 100%; width: 0%;
+        background: linear-gradient(90deg, #E84070, #C87BDB, #FFD700);
+        border-radius: 3px;
+        transition: width 0.2s ease;
+      }
+
+      .loading-percent {
+        font-size: 11px; color: #4A4A6C;
+        letter-spacing: 2px;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      /* Stars */
+      .star {
+        position: fixed; width: 2px; height: 2px;
+        background: #fff; border-radius: 50%;
+      }
+      .s1 { top: 12%; left: 18%; animation: twinkle 2s infinite; }
+      .s2 { top: 8%; right: 22%; animation: twinkle 3s infinite 0.5s; background: #FFD700; }
+      .s3 { bottom: 15%; left: 30%; animation: twinkle 2.5s infinite 1s; background: #FF69B4; }
+      .s4 { top: 35%; right: 10%; animation: twinkle 4s infinite 0.3s; }
+      .s5 { bottom: 25%; right: 35%; animation: twinkle 2s infinite 1.5s; background: #87CEEB; }
+      .s6 { top: 22%; left: 42%; animation: twinkle 3s infinite 0.8s; background: #C87BDB; }
+      .s7 { bottom: 40%; left: 12%; animation: twinkle 3.5s infinite 0.2s; }
+      .s8 { top: 55%; right: 15%; animation: twinkle 2.8s infinite 1.2s; background: #FFD700; }
+
+      /* Footer */
+      #unity-footer {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        height: 38px; background: #0D0D1A;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 10px; z-index: 5;
+      }
+      .unity-mobile #unity-footer { display: none; }
+      #unity-fullscreen-button {
+        cursor: pointer; width: 38px; height: 38px;
+        background: url('TemplateData/fullscreen-button.png') no-repeat center;
+      }
+      #unity-build-title {
+        font-family: 'Galmuri11', monospace;
+        font-size: 12px; color: #4A4A6C;
+      }
+
+      #unity-warning {
+        position: fixed; left: 50%; top: 5%;
+        transform: translateX(-50%);
+        background: #1A1A2E; color: #fff;
+        padding: 10px 16px; border-radius: 6px;
+        border: 1px solid #E84070;
+        font-family: 'Galmuri11', monospace; font-size: 12px;
+        display: none; z-index: 20;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+
+      <!-- Custom loading overlay -->
+      <div id="loading-overlay">
+        <div class="star s1"></div><div class="star s2"></div>
+        <div class="star s3"></div><div class="star s4"></div>
+        <div class="star s5"></div><div class="star s6"></div>
+        <div class="star s7"></div><div class="star s8"></div>
+
+        <svg class="loading-orbit" width="48" height="48" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="4" fill="#E84070"/>
+          <ellipse cx="20" cy="20" rx="16" ry="5" stroke="#C87BDB" stroke-width="1.2" transform="rotate(-30 20 20)"/>
+          <ellipse cx="20" cy="20" rx="16" ry="5" stroke="#8B9EF0" stroke-width="1.2" transform="rotate(30 20 20)"/>
+          <ellipse cx="20" cy="20" rx="16" ry="5" stroke="#E88AAE" stroke-width="1.2" transform="rotate(90 20 20)"/>
+          <circle cx="20" cy="20" r="2" fill="#FFD6E8"/>
+        </svg>
+
+        <div class="loading-title">SUPERNOVA</div>
+        <div class="loading-sub">MINIGAMES</div>
+
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="loading-percent" id="loading-percent">LOADING...</div>
+      </div>
+
+      <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-build-title">Supernova Minigames</div>
+        <div id="unity-fullscreen-button"></div>
+      </div>
+    </div>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var overlay = document.querySelector("#loading-overlay");
+      var progressFill = document.querySelector("#progress-fill");
+      var loadingPercent = document.querySelector("#loading-percent");
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: #E84070; padding: 10px; border-radius: 4px;';
+        else {
+          if (type == 'warning') div.style = 'background: #C87BDB; padding: 10px; border-radius: 4px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/2536b0e5f3924caff9f8d285d88dbfd8.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/7ac55bfa667437b7832c226901b97985.data.unityweb",
+        frameworkUrl: buildUrl + "/a8c35963ee395608bb5f247c2a90c550.framework.js.unityweb",
+        codeUrl: buildUrl + "/a7a46aa262d1617ca1dad782c9757574.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "CeREELs",
+        productName: "Supernova Minigames",
+        productVersion: "0.1.0",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+      }
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          var pct = Math.round(progress * 100);
+          progressFill.style.width = pct + "%";
+          loadingPercent.textContent = pct + "%";
+        }).then((unityInstance) => {
+          // Fade out loading overlay
+          overlay.classList.add("fade-out");
+          setTimeout(() => { overlay.style.display = "none"; }, 400);
+
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

@@ -1,133 +1,312 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity Web Player | Supernova Minigames</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=1080 height=1920 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supernova Minigames</title>
+  <link rel="shortcut icon" href="games/game01/TemplateData/favicon.ico">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+    @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Galmuri11.min.css');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Galmuri11', 'Pretendard Variable', sans-serif;
+      background: #0D0D1A;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+    @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+    @keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+    @keyframes twinkle { 0%,100% { opacity: .3 } 50% { opacity: 1 } }
+    @keyframes marquee { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
+
+    .cabinet {
+      background: #1A1A2E;
+      border-radius: 0;
+      border: none;
+      border-left: 3px solid #3A3A5C;
+      border-right: 3px solid #3A3A5C;
+      overflow: hidden;
+      max-width: 100%;
+      width: 100%;
+      margin: 0;
+    }
+
+    /* Header */
+    .cabinet-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #2A2A4A;
+      border-bottom: 2px solid #4A4A6C;
+    }
+    .cab-screws { display: flex; gap: 6px; }
+    .screw {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #888, #444);
+      border: 1px solid #333;
+    }
+    .cab-title {
+      font-size: 13px; font-weight: 700; color: #FFD700;
+      letter-spacing: 2px; text-shadow: 0 0 8px rgba(255,215,0,.4);
+    }
+
+    /* Screen */
+    .screen {
+      background: #0D0D1A;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,.015) 2px, rgba(255,255,255,.015) 4px);
+      pointer-events: none; z-index: 5;
+    }
+    .screen-inner { position: relative; z-index: 1; padding: 16px; }
+
+    /* Hero */
+    .hero-section { text-align: center; padding: 20px 10px; position: relative; }
+    .stars-bg { position: absolute; inset: 0; overflow: hidden; }
+    .pixel-star { position: absolute; width: 3px; height: 3px; background: #fff; }
+    .ps1 { top: 10px; left: 15%; animation: twinkle 2s infinite; }
+    .ps2 { top: 25px; right: 12%; animation: twinkle 3s infinite .5s; background: #FFD700; }
+    .ps3 { bottom: 20px; left: 25%; animation: twinkle 2.5s infinite 1s; background: #FF69B4; }
+    .ps4 { top: 40px; left: 50%; animation: twinkle 4s infinite .3s; }
+    .ps5 { bottom: 10px; right: 30%; animation: twinkle 2s infinite 1.5s; background: #87CEEB; }
+    .ps6 { top: 18px; left: 38%; animation: twinkle 3s infinite .8s; background: #C87BDB; }
+
+    .orbit-icon { animation: spin 5s linear infinite; margin-bottom: 8px; }
+    .title-kr { font-size: 10px; color: #C87BDB; letter-spacing: 4px; margin-bottom: 2px; }
+    .title-en {
+      font-size: 28px; font-weight: 700; color: #FFD700;
+      text-shadow: 2px 2px 0 #E84070, -1px -1px 0 #C87BDB, 0 0 12px rgba(255,215,0,.3);
+      letter-spacing: 2px; line-height: 1;
+    }
+    .title-sub { font-size: 12px; color: #8B9EF0; letter-spacing: 6px; margin-top: 4px; }
+
+    .marquee-bar {
+      background: #E84070; padding: 4px 0; overflow: hidden;
+      margin-top: 12px; border-radius: 3px;
+    }
+    .marquee-inner { display: flex; white-space: nowrap; animation: marquee 12s linear infinite; }
+    .marquee-inner span { font-size: 10px; color: #fff; font-weight: 700; padding: 0 16px; letter-spacing: 1px; }
+
+    /* Section */
+    .section-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0; margin: 20px 0 10px;
+    }
+    .section-bar h2 { font-size: 13px; font-weight: 700; color: #FFD700; letter-spacing: 1px; }
+    .section-bar .pill {
+      font-size: 9px; font-weight: 700; padding: 2px 8px;
+      border-radius: 4px; color: #fff; background: #C87BDB;
+    }
+
+    /* Game grid */
+    .grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    @media (min-width: 400px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 600px) {
+      .grid { grid-template-columns: repeat(6, 1fr); }
+    }
+
+    .card {
+      background: #1E1E36; border: 2px solid #3A3A5C;
+      border-radius: 8px; overflow: hidden; cursor: pointer;
+      transition: all .2s; text-decoration: none; display: block;
+    }
+    .card:hover { border-color: #FFD700; transform: translateY(-3px); }
+
+    .card-thumb {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .card-thumb .icon { font-size: 24px; z-index: 1; filter: drop-shadow(0 0 4px rgba(255,255,255,.2)); }
+    .card-thumb .thumb-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: 0;
+      image-rendering: pixelated;
+    }
+    .card-thumb .color-bar { position: absolute; top: 0; left: 0; right: 0; height: 20px; }
+    .card-thumb .game-title {
+      position: absolute; top: 4px; left: 0; right: 0; text-align: center;
+      font-size: 10px; font-weight: 700; color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.6); z-index: 2; letter-spacing: .5px;
+    }
+    .card-thumb .member-dot {
+      position: absolute; bottom: 4px; right: 4px;
+      font-size: 8px; font-weight: 700; padding: 2px 5px;
+      border-radius: 3px; color: #fff; z-index: 2;
+    }
+    .card-thumb .status-dot {
+      position: absolute; top: 4px; right: 4px;
+      font-size: 8px; font-weight: 700; padding: 2px 5px;
+      border-radius: 3px; color: #fff; z-index: 2;
+    }
+    .card-thumb .status-dot.playable { background: #4ADE80; }
+    .card-thumb .status-dot.coming { background: #666; }
+
+    .card-bottom {
+      display: flex; align-items: center; justify-content: center;
+      padding: 6px 8px; background: #12122A;
+    }
+    .card-bottom .label { font-size: 9px; color: #8888AA; }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding: 16px;
+      font-size: 9px; color: #4A4A6C; letter-spacing: 1px;
+    }
+
+    /* Disabled card */
+    .card.disabled { cursor: default; opacity: 0.5; }
+    .card.disabled:hover { border-color: #3A3A5C; transform: none; }
+  </style>
+</head>
+<body>
+  <div class="cabinet">
+    <div class="cabinet-top">
+      <div class="cab-screws"><span class="screw"></span><span class="screw"></span></div>
+      <div class="cab-title">SUPERNOVA MINIGAMES</div>
+      <div class="cab-screws"><span class="screw"></span><span class="screw"></span></div>
+    </div>
+    <div class="screen">
+      <div class="screen-inner">
+        <div class="hero-section">
+          <div class="stars-bg">
+            <div class="pixel-star ps1"></div><div class="pixel-star ps2"></div><div class="pixel-star ps3"></div>
+            <div class="pixel-star ps4"></div><div class="pixel-star ps5"></div><div class="pixel-star ps6"></div>
+          </div>
+          <svg class="orbit-icon" width="48" height="48" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="orbitGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E8709A"/>
+                <stop offset="100%" stop-color="#A8B4F0"/>
+              </linearGradient>
+              <linearGradient id="orbitGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#E8709A"/>
+                <stop offset="100%" stop-color="#8BC8E8"/>
+              </linearGradient>
+              <linearGradient id="starGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color="#E8709A"/>
+                <stop offset="100%" stop-color="#A8C8F0"/>
+              </linearGradient>
+            </defs>
+            <!-- Two crossing orbits -->
+            <ellipse cx="50" cy="50" rx="38" ry="18" stroke="url(#orbitGrad1)" stroke-width="6" transform="rotate(-45 50 50)" stroke-linecap="round"/>
+            <ellipse cx="50" cy="50" rx="38" ry="18" stroke="url(#orbitGrad2)" stroke-width="6" transform="rotate(45 50 50)" stroke-linecap="round"/>
+            <!-- Center starburst -->
+            <polygon points="50,38 52.5,46 58,43 54,48.5 62,50 54,51.5 58,57 52.5,54 50,62 47.5,54 42,57 46,51.5 38,50 46,48.5 42,43 47.5,46" fill="url(#starGrad)"/>
+            <!-- Top sparkle -->
+            <path d="M50,12 L51.5,17 L53,12 L51.5,7 Z" fill="#E8709A"/>
+            <path d="M45,14.5 L50,13 L55,14.5 L50,16 Z" fill="#E8709A"/>
+          </svg>
+          <div class="title-en">SUPERNOVA</div>
+          <div class="title-sub">MINIGAMES</div>
+          <div class="marquee-bar">
+            <div class="marquee-inner">
+              <span>★ SUPERNOVA MINIGAMES ★ SUPERNOVA MINIGAMES ★ SUPERNOVA MINIGAMES ★</span>
+              <span>★ SUPERNOVA MINIGAMES ★ SUPERNOVA MINIGAMES ★ SUPERNOVA MINIGAMES ★</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-bar">
+          <h2>► ALL GAMES</h2>
+          <span class="pill">6 GAMES</span>
+        </div>
+        <div class="grid">
+          <!-- Game 01: 플레이 가능 -->
+          <a class="card" href="games/game01/">
+            <div class="card-thumb" style="background:#1E1E36">
+              <img class="thumb-img" src="images/Game01_Thumbnail.png" alt="고음 훈련">
+              <span class="status-dot playable">PLAY</span>
+              <span class="member-dot" style="background:#E84070">Miho</span>
+            </div>
+            <div class="card-bottom"><span class="label">Game 01</span></div>
+          </a>
+
+          <!-- 준비 중 예시 카드들 -->
+          <div class="card disabled">
+            <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
+              <div class="color-bar" style="background:#444"></div>
+              <div class="game-title">???</div>
+              <span class="icon">🔒</span>
+              <span class="status-dot coming">SOON</span>
+            </div>
+            <div class="card-bottom"><span class="label">Coming Soon</span></div>
+          </div>
+
+          <div class="card disabled">
+            <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
+              <div class="color-bar" style="background:#444"></div>
+              <div class="game-title">???</div>
+              <span class="icon">🔒</span>
+              <span class="status-dot coming">SOON</span>
+            </div>
+            <div class="card-bottom"><span class="label">Coming Soon</span></div>
+          </div>
+
+          <div class="card disabled">
+            <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
+              <div class="color-bar" style="background:#444"></div>
+              <div class="game-title">???</div>
+              <span class="icon">🔒</span>
+              <span class="status-dot coming">SOON</span>
+            </div>
+            <div class="card-bottom"><span class="label">Coming Soon</span></div>
+          </div>
+
+          <div class="card disabled">
+            <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
+              <div class="color-bar" style="background:#444"></div>
+              <div class="game-title">???</div>
+              <span class="icon">🔒</span>
+              <span class="status-dot coming">SOON</span>
+            </div>
+            <div class="card-bottom"><span class="label">Coming Soon</span></div>
+          </div>
+
+          <div class="card disabled">
+            <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
+              <div class="color-bar" style="background:#444"></div>
+              <div class="game-title">???</div>
+              <span class="icon">🔒</span>
+              <span class="status-dot coming">SOON</span>
+            </div>
+            <div class="card-bottom"><span class="label">Coming Soon</span></div>
+          </div>
+        </div>
+
+        <div class="footer">
+          &copy; CeREELs GameDev
         </div>
       </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-logo-title-footer"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">Supernova Minigames</div>
-      </div>
     </div>
-    <script>
-      var canvas = document.querySelector("#unity-canvas");
+  </div>
+  <script type="module">
+    import { source, trackGameStart } from "./js/firebase-init.js";
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
+    // 게임 카드 클릭 시 game_start 이벤트 전송
+    document.querySelectorAll(".card:not(.disabled)").forEach(card => {
+      card.addEventListener("click", () => {
+        const gameId = card.querySelector(".label")?.textContent.match(/Game (\d+)/)?.[0]?.toLowerCase().replace(" ", "") || "unknown";
+        trackGameStart(gameId);
+      });
+    });
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/833364a985d8cc90933dd7e881b35a4b.loader.js";
-      var config = {
-        arguments: [],
-        dataUrl: buildUrl + "/8cea465893934489b0838e3b5b85344e.data",
-        frameworkUrl: buildUrl + "/5df99c1c743a7eabd2562bf1cbc4e145.framework.js",
-        codeUrl: buildUrl + "/e90be13fb9b438bbafcb19d0164552a9.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "CeREELs",
-        productName: "Supernova Minigames",
-        productVersion: "0.1.0",
-        showBanner: unityShowBanner,
-        // errorHandler: function(err, url, line) {
-        //    alert("error " + err + " occurred at line " + line);
-        //    // Return 'true' if you handled this error and don't want Unity
-        //    // to process it further, 'false' otherwise.
-        //    return true;
-        // },
-      };
-
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
-      // If you would like all file writes inside Unity Application.persistentDataPath
-      // directory to automatically persist so that the contents are remembered when
-      // the user revisits the site the next time, uncomment the following line:
-      // config.autoSyncPersistentDataPath = true;
-      // This autosyncing is currently not the default behavior to avoid regressing
-      // existing user projects that might rely on the earlier manual
-      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
-      // expected to change.
-
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        document.querySelector("#unity-container").className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
-      } else {
-        // Desktop style: Fill the viewport without scrolling
-        canvas.style.width = "100vw";
-        canvas.style.height = "calc(100vh - 50px)"; // 50px for footer
-      }
-
-      document.querySelector("#unity-loading-bar").style.display = "block";
-
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-
-              }).catch((message) => {
-                alert(message);
-              });
-            };
-
-      document.body.appendChild(script);
-
-    </script>
-  </body>
+    console.log(`[Firebase] initialized — source: ${source}`);
+  </script>
+</body>
 </html>
