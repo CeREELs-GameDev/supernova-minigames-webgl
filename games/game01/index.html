@@ -1,141 +1,37 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en-us">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>고음 훈련 | Supernova Minigames</title>
+    <title>Unity Web Player | Supernova Minigames</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <style>
-      @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Galmuri11.min.css');
-
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #0D0D1A; overflow: hidden; }
-
-      #unity-container { position: fixed; width: 100%; height: 100%; }
-      #unity-canvas { background: #0D0D1A; width: 100%; height: 100%; }
-
-      /* Custom loading overlay */
-      #loading-overlay {
-        position: fixed; inset: 0; z-index: 10;
-        background: #0D0D1A;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        font-family: 'Galmuri11', monospace;
-        transition: opacity 0.4s ease;
-      }
-      #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
-
-      @keyframes pulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
-      @keyframes twinkle { 0%,100% { opacity: 0.2 } 50% { opacity: 0.8 } }
-
-      .loading-title {
-        font-size: 24px; font-weight: 700; color: #FFD700;
-        text-shadow: 2px 2px 0 #E84070, -1px -1px 0 #C87BDB, 0 0 12px rgba(255,215,0,0.3);
-        letter-spacing: 3px;
-        margin-bottom: 6px;
-      }
-      .loading-sub {
-        font-size: 11px; color: #8B9EF0;
-        letter-spacing: 4px; margin-bottom: 32px;
-      }
-
-      /* Progress bar */
-      .progress-track {
-        width: 200px; height: 6px;
-        background: #1A1A2E;
-        border-radius: 3px;
-        border: 1px solid #3A3A5C;
-        overflow: hidden;
-        margin-bottom: 12px;
-      }
-      .progress-fill {
-        height: 100%; width: 0%;
-        background: linear-gradient(90deg, #E84070, #C87BDB, #FFD700);
-        border-radius: 3px;
-        transition: width 0.2s ease;
-      }
-
-      .loading-percent {
-        font-size: 11px; color: #4A4A6C;
-        letter-spacing: 2px;
-        animation: pulse 1.5s ease-in-out infinite;
-      }
-
-      /* Stars */
-      .star {
-        position: fixed; width: 2px; height: 2px;
-        background: #fff; border-radius: 50%;
-      }
-      .s1 { top: 12%; left: 18%; animation: twinkle 2s infinite; }
-      .s2 { top: 8%; right: 22%; animation: twinkle 3s infinite 0.5s; background: #FFD700; }
-      .s3 { bottom: 15%; left: 30%; animation: twinkle 2.5s infinite 1s; background: #FF69B4; }
-      .s4 { top: 35%; right: 10%; animation: twinkle 4s infinite 0.3s; }
-      .s5 { bottom: 25%; right: 35%; animation: twinkle 2s infinite 1.5s; background: #87CEEB; }
-      .s6 { top: 22%; left: 42%; animation: twinkle 3s infinite 0.8s; background: #C87BDB; }
-      .s7 { bottom: 40%; left: 12%; animation: twinkle 3.5s infinite 0.2s; }
-      .s8 { top: 55%; right: 15%; animation: twinkle 2.8s infinite 1.2s; background: #FFD700; }
-
-      /* Footer */
-      #unity-footer {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        height: 38px; background: #0D0D1A;
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 0 10px; z-index: 5;
-      }
-      .unity-mobile #unity-footer { display: none; }
-      #unity-fullscreen-button {
-        cursor: pointer; width: 38px; height: 38px;
-        background: url('TemplateData/fullscreen-button.png') no-repeat center;
-      }
-      #unity-build-title {
-        font-family: 'Galmuri11', monospace;
-        font-size: 12px; color: #4A4A6C;
-      }
-
-      #unity-warning {
-        position: fixed; left: 50%; top: 5%;
-        transform: translateX(-50%);
-        background: #1A1A2E; color: #fff;
-        padding: 10px 16px; border-radius: 6px;
-        border: 1px solid #E84070;
-        font-family: 'Galmuri11', monospace; font-size: 12px;
-        display: none; z-index: 20;
-      }
-    </style>
+    <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
-    <div id="unity-container">
-      <canvas id="unity-canvas" tabindex="-1"></canvas>
-
-      <!-- Custom loading overlay -->
-      <div id="loading-overlay">
-        <div class="star s1"></div><div class="star s2"></div>
-        <div class="star s3"></div><div class="star s4"></div>
-        <div class="star s5"></div><div class="star s6"></div>
-        <div class="star s7"></div><div class="star s8"></div>
-
-        <div class="loading-title">SUPERNOVA</div>
-        <div class="loading-sub">MINIGAMES</div>
-
-        <div class="progress-track">
-          <div class="progress-fill" id="progress-fill"></div>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=1080 height=1920 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
-        <div class="loading-percent" id="loading-percent">LOADING...</div>
       </div>
-
-      <div id="unity-warning"></div>
+      <div id="unity-warning"> </div>
       <div id="unity-footer">
-        <div id="unity-build-title">Supernova Minigames</div>
+        <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">Supernova Minigames</div>
       </div>
     </div>
-
     <script>
       var canvas = document.querySelector("#unity-canvas");
-      var overlay = document.querySelector("#loading-overlay");
-      var progressFill = document.querySelector("#progress-fill");
-      var loadingPercent = document.querySelector("#loading-percent");
 
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -144,9 +40,9 @@
         var div = document.createElement('div');
         div.innerHTML = msg;
         warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: #E84070; padding: 10px; border-radius: 4px;';
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
         else {
-          if (type == 'warning') div.style = 'background: #C87BDB; padding: 10px; border-radius: 4px;';
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
           setTimeout(function() {
             warningBanner.removeChild(div);
             updateBannerVisibility();
@@ -156,56 +52,82 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/24d4ca0cebfd462893e5f2ff1ede06ba.loader.js";
+      var loaderUrl = buildUrl + "/c1dbd0a43e2b7329f6a55806d4239b80.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/f9907bc8f197133eec83a9854723ac6e.data.unityweb",
-        frameworkUrl: buildUrl + "/a19e21b36b564ff7ff6710f289bf15ea.framework.js.unityweb",
-        codeUrl: buildUrl + "/5dec08623f0123505bde152ea7ead25b.wasm.unityweb",
+        dataUrl: buildUrl + "/39a96a53ac3152aa4ae75c74b1fe320f.data.unityweb",
+        frameworkUrl: buildUrl + "/8260e726f305491f616992e4dbd302d1.framework.js.unityweb",
+        codeUrl: buildUrl + "/b1916cbb0928354d14ff7030c002e464.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "CeREELs",
         productName: "Supernova Minigames",
         productVersion: "0.1.0",
         showBanner: unityShowBanner,
+        // errorHandler: function(err, url, line) {
+        //    alert("error " + err + " occurred at line " + line);
+        //    // Return 'true' if you handled this error and don't want Unity
+        //    // to process it further, 'false' otherwise.
+        //    return true;
+        // },
       };
 
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
+
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        canvas.style.width = "1080px";
+        canvas.style.height = "1920px";
       }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
 
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          var pct = Math.round(progress * 100);
-          progressFill.style.width = pct + "%";
-          loadingPercent.textContent = pct + "%";
-        }).then((unityInstance) => {
-          // Fade out loading overlay
-          overlay.classList.add("fade-out");
-          setTimeout(() => { overlay.style.display = "none"; }, 400);
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
 
-          document.querySelector("#unity-fullscreen-button").onclick = () => {
-            unityInstance.SetFullscreen(1);
-          };
-
-          // App → Unity message bridge
-          window.addEventListener('message', function (e) {
-            if (e.data && e.data.type === 'EMAIL_FROM_APP' && e.data.email) {
-              unityInstance.SendMessage('WebBridge', 'ReceiveEmail', e.data.email);
-            }
-          });
-        }).catch((message) => {
-          alert(message);
-        });
-      };
+              }).catch((message) => {
+                alert(message);
+              });
+            };
 
       document.body.appendChild(script);
+
     </script>
   </body>
 </html>
