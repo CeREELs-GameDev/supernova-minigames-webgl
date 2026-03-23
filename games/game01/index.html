@@ -156,12 +156,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/c1dbd0a43e2b7329f6a55806d4239b80.loader.js";
+      var loaderUrl = buildUrl + "/508b559628c825b1e1e48611ff020806.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/c0dbe72cd2b75e5e557d2f6a8be1451e.data.unityweb",
-        frameworkUrl: buildUrl + "/8260e726f305491f616992e4dbd302d1.framework.js.unityweb",
-        codeUrl: buildUrl + "/b1916cbb0928354d14ff7030c002e464.wasm.unityweb",
+        dataUrl: buildUrl + "/5949964a995aff8f8d75b51c456fb971.data.unityweb",
+        frameworkUrl: buildUrl + "/3ae1018555328748c2715d7a923d9337.framework.js.unityweb",
+        codeUrl: buildUrl + "/c91a4290f3e45ef7dc8ec3dea39e8dbe.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "CeREELs",
         productName: "Supernova Minigames",
@@ -196,9 +196,20 @@
 
           // App → Unity message bridge
           window.addEventListener('message', function (e) {
-            if (e.data && e.data.type === 'EMAIL_FROM_APP' && e.data.email) {
-              unityInstance.SendMessage('WebBridge', 'ReceiveEmail', e.data.email);
-            }
+            try {
+              var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+              if (data && data.type === 'EMAIL_FROM_APP' && data.email) {
+                unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
+              }
+            } catch (err) {}
+          });
+          document.addEventListener('message', function (e) {
+            try {
+              var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+              if (data && data.type === 'EMAIL_FROM_APP' && data.email) {
+                unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
+              }
+            } catch (err) {}
           });
         }).catch((message) => {
           alert(message);
