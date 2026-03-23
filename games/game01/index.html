@@ -136,6 +136,33 @@
       var progressFill = document.querySelector("#progress-fill");
       var loadingPercent = document.querySelector("#loading-percent");
 
+      // App → Game message queue (Unity 준비 전 도착한 메시지 보관)
+      var _unityInstance = null;
+      var _messageQueue = [];
+
+      function handleAppMessage(event) {
+        try {
+          var data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          if (!data || !data.type) return;
+
+          if (_unityInstance) {
+            routeMessage(data);
+          } else {
+            _messageQueue.push(data);
+          }
+        } catch (err) {}
+      }
+
+      function routeMessage(data) {
+        if (data.type === 'EMAIL_FROM_APP' && data.email) {
+          _unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
+        }
+      }
+
+      // 즉시 리스너 등록 — WebView 로드 직후 앱 메시지 수신 가능
+      window.addEventListener('message', handleAppMessage);
+      document.addEventListener('message', handleAppMessage);
+
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -186,6 +213,8 @@
           progressFill.style.width = pct + "%";
           loadingPercent.textContent = pct + "%";
         }).then((unityInstance) => {
+          _unityInstance = unityInstance;
+
           // Fade out loading overlay
           overlay.classList.add("fade-out");
           setTimeout(() => { overlay.style.display = "none"; }, 400);
@@ -194,23 +223,9 @@
             unityInstance.SetFullscreen(1);
           };
 
-          // App → Unity message bridge
-          window.addEventListener('message', function (e) {
-            try {
-              var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-              if (data && data.type === 'EMAIL_FROM_APP' && data.email) {
-                unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
-              }
-            } catch (err) {}
-          });
-          document.addEventListener('message', function (e) {
-            try {
-              var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-              if (data && data.type === 'EMAIL_FROM_APP' && data.email) {
-                unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
-              }
-            } catch (err) {}
-          });
+          // 큐에 쌓인 메시지 재생
+          _messageQueue.forEach(function (data) { routeMessage(data); });
+          _messageQueue = [];
         }).catch((message) => {
           alert(message);
         });
