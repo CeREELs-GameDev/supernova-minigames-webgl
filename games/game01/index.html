@@ -163,6 +163,19 @@
       window.addEventListener('message', handleAppMessage);
       document.addEventListener('message', handleAppMessage);
 
+      // WebGL AudioContext resume — 일부 브라우저/WebView에서 유저 인터랙션 전까지 오디오 차단됨
+      document.addEventListener('click', function resumeAudio() {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          var ctx = new AudioCtx();
+          ctx.resume().then(function() { ctx.close(); });
+        }
+        if (_unityInstance && _unityInstance.Module && _unityInstance.Module.resumeAudio) {
+          _unityInstance.Module.resumeAudio();
+        }
+        document.removeEventListener('click', resumeAudio);
+      }, { once: true });
+
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -183,12 +196,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/6e90c4156c1f59e94b55e765face3d6a.loader.js";
+      var loaderUrl = buildUrl + "/25e4e29663d7b8097777423e9955f007.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/513569ddbd9dcb0cba7674a36d5c2d96.data.unityweb",
+        dataUrl: buildUrl + "/105e8cbb072574ac386b5283e7e55545.data.unityweb",
         frameworkUrl: buildUrl + "/2f6c5f907777ec487dfed36e76aeada5.framework.js.unityweb",
-        codeUrl: buildUrl + "/0e39f2937c8d3ba5eff5cd842c9d41a0.wasm.unityweb",
+        codeUrl: buildUrl + "/0b9c388653c31b8f5c68aa988c678701.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "CeREELs",
         productName: "Supernova Minigames",
