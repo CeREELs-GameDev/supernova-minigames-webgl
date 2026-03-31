@@ -101,6 +101,26 @@
         font-family: 'Galmuri11', monospace; font-size: 12px;
         display: none; z-index: 20;
       }
+
+      /* Debug panel */
+      #debug-panel {
+        position: fixed; bottom: 38px; left: 0; right: 0;
+        max-height: 30vh; overflow-y: auto;
+        background: rgba(0,0,0,0.85);
+        font-family: monospace; font-size: 10px;
+        z-index: 100; padding: 4px 8px;
+        display: flex; flex-direction: column;
+      }
+      #debug-panel .log { padding: 2px 0; border-bottom: 1px solid #222; white-space: pre-wrap; word-break: break-all; }
+      #debug-panel .log.send { color: #4FC3F7; }
+      #debug-panel .log.recv { color: #81C784; }
+      #debug-panel .log.info { color: #FFD54F; }
+      #debug-toggle {
+        position: fixed; bottom: 40px; right: 4px; z-index: 101;
+        background: #333; color: #fff; border: 1px solid #555;
+        font-family: monospace; font-size: 10px;
+        padding: 2px 6px; cursor: pointer; border-radius: 3px;
+      }
     </style>
   </head>
   <body>
@@ -124,6 +144,8 @@
       </div>
 
       <div id="unity-warning"></div>
+      <div id="debug-panel"></div>
+      <button id="debug-toggle">DEBUG</button>
       <div id="unity-footer">
         <div id="unity-build-title">Supernova Minigames</div>
         <div id="unity-fullscreen-button"></div>
@@ -136,6 +158,31 @@
       var progressFill = document.querySelector("#progress-fill");
       var loadingPercent = document.querySelector("#loading-percent");
 
+      // === Debug ===
+      var _debugPanel = document.getElementById('debug-panel');
+      var _debugToggle = document.getElementById('debug-toggle');
+      _debugToggle.onclick = function() {
+        _debugPanel.style.display = _debugPanel.style.display === 'none' ? 'flex' : 'none';
+      };
+      function debugLog(msg, type) {
+        var div = document.createElement('div');
+        div.className = 'log ' + (type || 'info');
+        var now = new Date();
+        var ts = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
+        var prefix = type === 'send' ? '⬆ GAME→APP' : type === 'recv' ? '⬇ APP→GAME' : 'ℹ';
+        div.textContent = '[' + ts + '] ' + prefix + ' ' + msg;
+        _debugPanel.appendChild(div);
+        _debugPanel.scrollTop = _debugPanel.scrollHeight;
+      }
+
+      // Game→App 가로채기: ReactNativeWebView.postMessage 훅
+      window.ReactNativeWebView = window.ReactNativeWebView || {};
+      var _originalPostMessage = window.ReactNativeWebView.postMessage;
+      window.ReactNativeWebView.postMessage = function(json) {
+        debugLog(json, 'send');
+        if (_originalPostMessage) _originalPostMessage.call(window.ReactNativeWebView, json);
+      };
+
       // App → Game message queue (Unity 준비 전 도착한 메시지 보관)
       var _unityInstance = null;
       var _messageQueue = [];
@@ -145,10 +192,13 @@
           var data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
           if (!data || !data.type) return;
 
+          debugLog(JSON.stringify(data), 'recv');
+
           if (_unityInstance) {
             routeMessage(data);
           } else {
             _messageQueue.push(data);
+            debugLog('(queued — Unity not ready)', 'info');
           }
         } catch (err) {}
       }
