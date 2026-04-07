@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>On the Run | Supernova Minigames</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Galmuri11.min.css');
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #0D0D1A; overflow: hidden; }
+
+      #unity-container { position: fixed; width: 100%; height: 100%; }
+      #unity-canvas { background: #0D0D1A; width: 100%; height: 100%; }
+
+      /* Custom loading overlay */
+      #loading-overlay {
+        position: fixed; inset: 0; z-index: 10;
+        background: #0D0D1A;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-family: 'Galmuri11', monospace;
+        transition: opacity 0.4s ease;
+      }
+      #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+      .loading-gif {
+        max-width: 80%;
+        max-height: 50%;
+        image-rendering: pixelated;
+      }
+
+      /* Footer */
+      #unity-footer {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        height: 38px; background: #0D0D1A;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 10px; z-index: 5;
+      }
+      .unity-mobile #unity-footer { display: none; }
+      #unity-fullscreen-button {
+        cursor: pointer; width: 38px; height: 38px;
+        background: url('TemplateData/fullscreen-button.png') no-repeat center;
+      }
+      #unity-build-title {
+        font-family: 'Galmuri11', monospace;
+        font-size: 12px; color: #4A4A6C;
+      }
+
+      #unity-warning {
+        position: fixed; left: 50%; top: 5%;
+        transform: translateX(-50%);
+        background: #1A1A2E; color: #fff;
+        padding: 10px 16px; border-radius: 6px;
+        border: 1px solid #E84070;
+        font-family: 'Galmuri11', monospace; font-size: 12px;
+        display: none; z-index: 20;
+      }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+      import { getAnalytics, logEvent } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js';
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCukytgMgADDUTJk_CsgFlqTX01ghJDzvE",
+        authDomain: "supernova-minigames.firebaseapp.com",
+        projectId: "supernova-minigames",
+        storageBucket: "supernova-minigames.firebasestorage.app",
+        messagingSenderId: "150940196541",
+        appId: "1:150940196541:web:8aa971581bad11688161d4",
+        measurementId: "G-JN5HC8N0NK"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+
+      // Unity에서 호출할 전역 함수
+      window.FirebaseLogEvent = function(eventName, paramsJson) {
+        try {
+          var params = paramsJson ? JSON.parse(paramsJson) : {};
+          logEvent(analytics, eventName, params);
+        } catch (e) {
+          console.warn('[Firebase] logEvent error:', e);
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+
+      <!-- Custom loading overlay -->
+      <div id="loading-overlay">
+        <img class="loading-gif" src="TemplateData/Minigame_Loading.gif" alt="Loading...">
+      </div>
+
+      <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-build-title">Supernova Minigames</div>
+        <div id="unity-fullscreen-button"></div>
+      </div>
+    </div>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var overlay = document.querySelector("#loading-overlay");
+
+      // App → Game message queue (Unity 준비 전 도착한 메시지 보관)
+      var _unityInstance = null;
+      var _messageQueue = [];
+
+      function handleAppMessage(event) {
+        try {
+          var data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          if (!data || !data.type) return;
+
+          if (_unityInstance) {
+            routeMessage(data);
+          } else {
+            _messageQueue.push(data);
+          }
+        } catch (err) {}
+      }
+
+      function routeMessage(data) {
+        if (data.type === 'EMAIL_FROM_APP' && data.email) {
+          _unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
+        } else if (data.type === 'GAME_SETTINGS') {
+          _unityInstance.SendMessage('WebBridge', 'ReceiveSettings', JSON.stringify(data));
+        } else if (data.type === 'LEADERBOARD') {
+          _unityInstance.SendMessage('WebBridge', 'ReceiveLeaderboard', JSON.stringify(data));
+        }
+      }
+
+      // 즉시 리스너 등록 — WebView 로드 직후 앱 메시지 수신 가능
+      window.addEventListener('message', handleAppMessage);
+      document.addEventListener('message', handleAppMessage);
+
+      // WebGL AudioContext resume — 일부 브라우저/WebView에서 유저 인터랙션 전까지 오디오 차단됨
+      document.addEventListener('click', function resumeAudio() {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          var ctx = new AudioCtx();
+          ctx.resume().then(function() { ctx.close(); });
+        }
+        if (_unityInstance && _unityInstance.Module && _unityInstance.Module.resumeAudio) {
+          _unityInstance.Module.resumeAudio();
+        }
+        document.removeEventListener('click', resumeAudio);
+      }, { once: true });
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: #E84070; padding: 10px; border-radius: 4px;';
+        else {
+          if (type == 'warning') div.style = 'background: #C87BDB; padding: 10px; border-radius: 4px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/c868680f2a726d3656142e7e9d8b4b62.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/d9a39e51b49316e462f2db5d5755aa32.data.unityweb",
+        frameworkUrl: buildUrl + "/bc7949aa6e622b18aaf85bdfdbaa0520.framework.js.unityweb",
+        codeUrl: buildUrl + "/d8edefb2fae7fd179aecb196c309490a.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "CeREELs",
+        productName: "Supernova Minigames",
+        productVersion: "0.3.0",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+      }
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+        }).then((unityInstance) => {
+          _unityInstance = unityInstance;
+
+          // Fade out loading overlay
+          overlay.classList.add("fade-out");
+          setTimeout(() => { overlay.style.display = "none"; }, 400);
+
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+
+          // 큐에 쌓인 메시지 재생
+          _messageQueue.forEach(function (data) { routeMessage(data); });
+          _messageQueue = [];
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
