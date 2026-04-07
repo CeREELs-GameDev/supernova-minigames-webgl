@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>고음 훈련 | Supernova Minigames</title>
+    <title>On the Run | Supernova Minigames</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <style>
       @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Galmuri11.min.css');
@@ -25,55 +25,11 @@
       }
       #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
 
-      @keyframes pulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
-      @keyframes twinkle { 0%,100% { opacity: 0.2 } 50% { opacity: 0.8 } }
-
-      .loading-title {
-        font-size: 24px; font-weight: 700; color: #FFD700;
-        text-shadow: 2px 2px 0 #E84070, -1px -1px 0 #C87BDB, 0 0 12px rgba(255,215,0,0.3);
-        letter-spacing: 3px;
-        margin-bottom: 6px;
+      .loading-gif {
+        max-width: 80%;
+        max-height: 50%;
+        image-rendering: pixelated;
       }
-      .loading-sub {
-        font-size: 11px; color: #8B9EF0;
-        letter-spacing: 4px; margin-bottom: 32px;
-      }
-
-      /* Progress bar */
-      .progress-track {
-        width: 200px; height: 6px;
-        background: #1A1A2E;
-        border-radius: 3px;
-        border: 1px solid #3A3A5C;
-        overflow: hidden;
-        margin-bottom: 12px;
-      }
-      .progress-fill {
-        height: 100%; width: 0%;
-        background: linear-gradient(90deg, #E84070, #C87BDB, #FFD700);
-        border-radius: 3px;
-        transition: width 0.2s ease;
-      }
-
-      .loading-percent {
-        font-size: 11px; color: #4A4A6C;
-        letter-spacing: 2px;
-        animation: pulse 1.5s ease-in-out infinite;
-      }
-
-      /* Stars */
-      .star {
-        position: fixed; width: 2px; height: 2px;
-        background: #fff; border-radius: 50%;
-      }
-      .s1 { top: 12%; left: 18%; animation: twinkle 2s infinite; }
-      .s2 { top: 8%; right: 22%; animation: twinkle 3s infinite 0.5s; background: #FFD700; }
-      .s3 { bottom: 15%; left: 30%; animation: twinkle 2.5s infinite 1s; background: #FF69B4; }
-      .s4 { top: 35%; right: 10%; animation: twinkle 4s infinite 0.3s; }
-      .s5 { bottom: 25%; right: 35%; animation: twinkle 2s infinite 1.5s; background: #87CEEB; }
-      .s6 { top: 22%; left: 42%; animation: twinkle 3s infinite 0.8s; background: #C87BDB; }
-      .s7 { bottom: 40%; left: 12%; animation: twinkle 3.5s infinite 0.2s; }
-      .s8 { top: 55%; right: 15%; animation: twinkle 2.8s infinite 1.2s; background: #FFD700; }
 
       /* Footer */
       #unity-footer {
@@ -102,6 +58,35 @@
         display: none; z-index: 20;
       }
     </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+      import { getAnalytics, logEvent } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js';
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCukytgMgADDUTJk_CsgFlqTX01ghJDzvE",
+        authDomain: "supernova-minigames.firebaseapp.com",
+        projectId: "supernova-minigames",
+        storageBucket: "supernova-minigames.firebasestorage.app",
+        messagingSenderId: "150940196541",
+        appId: "1:150940196541:web:8aa971581bad11688161d4",
+        measurementId: "G-JN5HC8N0NK"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+
+      // Unity에서 호출할 전역 함수
+      window.FirebaseLogEvent = function(eventName, paramsJson) {
+        try {
+          var params = paramsJson ? JSON.parse(paramsJson) : {};
+          logEvent(analytics, eventName, params);
+        } catch (e) {
+          console.warn('[Firebase] logEvent error:', e);
+        }
+      };
+    </script>
   </head>
   <body>
     <div id="unity-container">
@@ -109,18 +94,7 @@
 
       <!-- Custom loading overlay -->
       <div id="loading-overlay">
-        <div class="star s1"></div><div class="star s2"></div>
-        <div class="star s3"></div><div class="star s4"></div>
-        <div class="star s5"></div><div class="star s6"></div>
-        <div class="star s7"></div><div class="star s8"></div>
-
-        <div class="loading-title">SUPERNOVA</div>
-        <div class="loading-sub">MINIGAMES</div>
-
-        <div class="progress-track">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        <div class="loading-percent" id="loading-percent">LOADING...</div>
+        <img class="loading-gif" src="TemplateData/Minigame_Loading.gif" alt="Loading...">
       </div>
 
       <div id="unity-warning"></div>
@@ -133,8 +107,6 @@
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var overlay = document.querySelector("#loading-overlay");
-      var progressFill = document.querySelector("#progress-fill");
-      var loadingPercent = document.querySelector("#loading-percent");
 
       // App → Game message queue (Unity 준비 전 도착한 메시지 보관)
       var _unityInstance = null;
@@ -154,7 +126,9 @@
       }
 
       function routeMessage(data) {
-        if (data.type === 'GAME_SETTINGS') {
+        if (data.type === 'EMAIL_FROM_APP' && data.email) {
+          _unityInstance.SendMessage('WebBridge', 'ReceiveEmail', data.email);
+        } else if (data.type === 'GAME_SETTINGS') {
           _unityInstance.SendMessage('WebBridge', 'ReceiveSettings', JSON.stringify(data));
         } else if (data.type === 'LEADERBOARD') {
           _unityInstance.SendMessage('WebBridge', 'ReceiveLeaderboard', JSON.stringify(data));
@@ -224,9 +198,6 @@
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          var pct = Math.round(progress * 100);
-          progressFill.style.width = pct + "%";
-          loadingPercent.textContent = pct + "%";
         }).then((unityInstance) => {
           _unityInstance = unityInstance;
 
