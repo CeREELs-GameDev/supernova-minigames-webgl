@@ -212,6 +212,11 @@
           // 큐에 쌓인 메시지 재생
           _messageQueue.forEach(function (data) { routeMessage(data); });
           _messageQueue = [];
+
+          // 노치 safe area 전달
+          if (window.SAFE_AREA_TOP) {
+            unityInstance.SendMessage('WebBridge', 'ReceiveSafeArea', String(window.SAFE_AREA_TOP));
+          }
         }).catch((message) => {
           alert(message);
         });

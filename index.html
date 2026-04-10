@@ -134,9 +134,10 @@
     }
     .card-thumb .icon { font-size: 24px; z-index: 1; filter: drop-shadow(0 0 4px rgba(255,255,255,.2)); }
     .card-thumb .thumb-img {
-      position: absolute; inset: 0; width: 100%; height: 100%;
+      position: absolute; inset: 0; width: 150px; height: 150px;
       object-fit: cover; z-index: 0;
       image-rendering: pixelated;
+      margin: auto;
     }
     .card-thumb .color-bar { position: absolute; top: 0; left: 0; right: 0; height: 20px; }
     .card-thumb .game-title {
@@ -203,27 +204,27 @@
           <span class="pill">6 GAMES</span>
         </div>
         <div class="grid">
-          <!-- Game 01: 플레이 가능 -->
-          <a class="card" href="games/game01/">
+          <!-- Game 01: Note Rush -->
+          <a class="card" href="games/1/">
             <div class="card-thumb" style="background:#1E1E36">
-              <img class="thumb-img" src="images/Game01_Thumbnail.png" alt="고음 훈련">
+              <img class="thumb-img" src="images/thumbnail_game01.png" alt="Note Rush">
               <span class="status-dot playable">PLAY</span>
               <span class="member-dot" style="background:#E84070">Miho</span>
             </div>
             <div class="card-bottom"><span class="label">Game 01</span></div>
           </a>
 
-          <!-- 준비 중 예시 카드들 -->
-          <div class="card disabled">
-            <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
-              <div class="color-bar" style="background:#444"></div>
-              <div class="game-title">???</div>
-              <span class="icon">🔒</span>
-              <span class="status-dot coming">SOON</span>
+          <!-- Game 02: On the Run -->
+          <a class="card" href="games/2/">
+            <div class="card-thumb" style="background:#1E1E36">
+              <img class="thumb-img" src="images/thumbnail_game02.png" alt="On the Run">
+              <span class="status-dot playable">PLAY</span>
+              <span class="member-dot" style="background:#87CEEB">Sohee</span>
             </div>
-            <div class="card-bottom"><span class="label">Coming Soon</span></div>
-          </div>
+            <div class="card-bottom"><span class="label">Game 02</span></div>
+          </a>
 
+          <!-- 준비 중 -->
           <div class="card disabled">
             <div class="card-thumb" style="background:linear-gradient(180deg,#2A2A3A 0%,#1E1E36 40%)">
               <div class="color-bar" style="background:#444"></div>
